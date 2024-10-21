@@ -5,8 +5,7 @@ from math import radians, sin, cos, sqrt, atan2
 # 네이버 API 정보
 CLIENT_ID = 'buzzqnu77m'
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
-NAVER_MAP_CLIENT_ID = 'buzzqnu77m'
-NAVER_MAP_CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
+GOOGLE_MAP_API_KEY = 'AIzaSyBJLVjna4UFp4I6NpfI_HodaplzWcAXkqI'
 
 # Geocoding API 호출 함수
 def get_coordinates(address):
@@ -39,7 +38,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산 및 네이버 지도 표기 1607")
+st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기1613")
 
 start_address = st.text_input("출발지 주소를 입력하세요")
 end_address = st.text_input("도착지 주소를 입력하세요")
@@ -57,26 +56,26 @@ if st.button("거리 계산 및 지도 표시"):
         distance = calculate_distance(start_lat, start_lon, end_lat, end_lon)
         st.success(f"출발지와 도착지 사이의 거리는 {distance:.2f} km 입니다.")
         
-        # 지도 표시용 HTML
+        # 구글 지도 표시용 HTML
         map_html = f"""
         <html>
         <head>
-        <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId={NAVER_MAP_CLIENT_ID}&ncpClientSecret={NAVER_MAP_CLIENT_SECRET}"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAP_API_KEY}"></script>
         <script>
         function initMap() {{
-            var map = new naver.maps.Map('map', {{
-                center: new naver.maps.LatLng({start_lat}, {start_lon}),
-                zoom: 10
+            var map = new google.maps.Map(document.getElementById('map'), {{
+                zoom: 10,
+                center: {{lat: {start_lat}, lng: {start_lon}}}
             }});
 
-            var startMarker = new naver.maps.Marker({{
-                position: new naver.maps.LatLng({start_lat}, {start_lon}),
+            var startMarker = new google.maps.Marker({{
+                position: {{lat: {start_lat}, lng: {start_lon}}},
                 map: map,
                 title: '출발지: {start_address}'
             }});
 
-            var endMarker = new naver.maps.Marker({{
-                position: new naver.maps.LatLng({end_lat}, {end_lon}),
+            var endMarker = new google.maps.Marker({{
+                position: {{lat: {end_lat}, lng: {end_lon}}},
                 map: map,
                 title: '도착지: {end_address}'
             }});
