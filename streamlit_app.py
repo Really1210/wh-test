@@ -3,8 +3,8 @@ import requests
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 설정
-client_id = "buzzqnu77m"
-client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
+client_id = "xbajg8w92p"
+client_secret = "MPSE5rkfxFRJT98AgbzRoidsGBu3xjT1h93tKSac"
 
 # 좌표를 받아오는 함수
 def get_coordinates(address):
@@ -59,8 +59,8 @@ def create_naver_map_url(start_coord, end_coord):
                    f"type:s|pos:{end_coord[1]}%20{end_coord[0]}|icon:https://i.imgur.com/nVtI3wq.png"  # 별 마커
     }
     headers = {
-        "X-NCP-APIGW-API-KEY-ID": "xbajg8w92p",
-        "X-NCP-APIGW-API-KEY": "MPSE5rkfxFRJT98AgbzRoidsGBu3xjT1h93tKSac"
+        "X-NCP-APIGW-API-KEY-ID": client_id,
+        "X-NCP-APIGW-API-KEY": client_secret
     }
     response = requests.get(base_url, headers=headers, params=params)
 
@@ -73,7 +73,7 @@ def create_naver_map_url(start_coord, end_coord):
     return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시 1441")
+st.title("출발지와 도착지의 거리 및 지도 표시 1513")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
