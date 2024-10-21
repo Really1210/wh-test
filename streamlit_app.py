@@ -7,7 +7,6 @@ CLIENT_ID = 'buzzqnu77m'
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
 GOOGLE_MAP_API_KEY = 'AIzaSyBnCSqt1jpfJIJXNevyQHQ-7ZZ2K3ucoVA'
 
-
 # Geocoding API 호출 함수
 def get_coordinates(address):
     """
@@ -46,7 +45,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기 1728 ")
+st.title("네이버 지도에 출발지와 도착지 표시 및 거리 계산")
 
 # 사용자로부터 출발지와 도착지 주소 입력 받기
 start_address = st.text_input("출발지 주소를 입력하세요")
@@ -66,39 +65,15 @@ if st.button("거리 계산 및 지도 표시"):
         distance = calculate_distance(start_lat, start_lon, end_lat, end_lon)
         st.success(f"출발지와 도착지 사이의 거리는 {distance:.2f} km 입니다.")
         
-        # 구글 지도 HTML 생성 및 표시
+        # 네이버 지도 HTML 생성 및 표시
         map_html = f"""
-        <html>
-        <head>
-        <script src="https://maps.googleapis.com/maps/api/js?key={GOOGLE_MAP_API_KEY}"></script>
-        <script>
-        function initMap() {{
-            var map = new google.maps.Map(document.getElementById('map'), {{
-                zoom: 10,
-                center: {{lat: {start_lat}, lng: {start_lon}}}
-            }});
-
-            var startMarker = new google.maps.Marker({{
-                position: {{lat: {start_lat}, lng: {start_lon}}},
-                map: map,
-                title: '출발지: {start_address}'
-            }});
-
-            var endMarker = new google.maps.Marker({{
-                position: {{lat: {end_lat}, lng: {end_lon}}},
-                map: map,
-                title: '도착지: {end_address}'
-            }});
-        }}
-        </script>
-        </head>
-        <body onload="initMap()">
-        <div id="map" style="width:100%;height:500px;"></div>
-        </body>
-        </html>
+        <iframe
+        src="https://map.naver.com/v5/?c={start_lon},{start_lat},14,0,0,0&places={start_lon},{start_lat},{end_lon},{end_lat}"
+        width="100%" height="500px" frameborder="0">
+        </iframe>
         """
         
-        # 구글 지도를 스트림릿 내에 표시
+        # 네이버 지도를 스트림릿 내에 표시
         st.components.v1.html(map_html, height=600)
     else:
         st.error("좌표를 찾을 수 없는 주소가 있습니다. 다시 시도해주세요.")
