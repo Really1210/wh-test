@@ -45,7 +45,7 @@ def update_dataset_values(database):
     return database
 
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기 1628")
+st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기 1705 ")
 
 start_address = st.text_input("출발지 주소를 입력하세요")
 end_address = st.text_input("도착지 주소를 입력하세요")
