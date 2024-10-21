@@ -37,7 +37,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산")
+st.title("출발지와 도착지 간 거리 계산 1550")
 
 start_address = st.text_input("출발지 주소를 입력하세요")
 end_address = st.text_input("도착지 주소를 입력하세요")
@@ -47,6 +47,11 @@ if st.button("거리 계산"):
     end_lat, end_lon = get_coordinates(end_address)
     
     if start_lat and end_lat:
+        # 위도 경도 출력
+        st.write(f"출발지: {start_address} -> 위도: {start_lat}, 경도: {start_lon}")
+        st.write(f"도착지: {end_address} -> 위도: {end_lat}, 경도: {end_lon}")
+        
+        # 거리 계산
         distance = calculate_distance(start_lat, start_lon, end_lat, end_lon)
         st.success(f"출발지와 도착지 사이의 거리는 {distance:.2f} km 입니다.")
     else:
