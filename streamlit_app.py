@@ -7,6 +7,7 @@ from math import radians, sin, cos, sqrt, atan2
 client_id = "buzzqnu77m"
 client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
 
+
 # 좌표를 받아오는 함수
 def get_coordinates(address):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
@@ -14,17 +15,23 @@ def get_coordinates(address):
         "X-NCP-APIGW-API-KEY-ID": client_id,
         "X-NCP-APIGW-API-KEY": client_secret
     }
-    params = {"query": urllib.parse.quote(address)}  # 주소를 URL 인코딩하여 쿼리 파라미터로 전달
+    params = {"query": address}
+    
     response = requests.get(url, headers=headers, params=params)
     
     if response.status_code == 200:
         data = response.json()
-        if data['addresses']:
+        
+        # Check if 'addresses' key exists and contains data
+        if 'addresses' in data and data['addresses']:
             lat = float(data['addresses'][0]['y'])
             lon = float(data['addresses'][0]['x'])
             return lat, lon
+        else:
+            st.error("No address data found. Please check the input address.")
     else:
-        print(f"Error: {response.status_code}")
+        st.error(f"Error with API request. Status code: {response.status_code}")
+    
     return None
 
 # 두 좌표 간의 거리를 계산하는 함수 (Haversine 공식 사용)
@@ -50,28 +57,25 @@ def create_naver_map_url(start_coord, end_coord):
         "h": 400,  # 지도 높이
         "center": f"{(start_coord[1] + end_coord[1]) / 2},{(start_coord[0] + end_coord[0]) / 2}",
         "level": 11,  # 줌 레벨
-        "markers": f"type:d|size:mid|pos:{start_coord[1]}%20{start_coord[0]}|icon:https://i.imgur.com/zlMBxw1.png,"  # 동그라미 마커
-                  f"type:s|pos:{end_coord[1]}%20{end_coord[0]}|icon:https://i.imgur.com/nVtI3wq.png"  # 별 마커
+        "markers": f"type:d|size:mid|pos:{start_coord[1]}%20{start_coord[0]}|icon:https://i.imgur.com/zlMBxw1.png,"
+                   f"type:s|pos:{end_coord[1]}%20{end_coord[0]}|icon:https://i.imgur.com/nVtI3wq.png"  # 별 마커
     }
     headers = {
         "X-NCP-APIGW-API-KEY-ID": client_id,
         "X-NCP-APIGW-API-KEY": client_secret
     }
     response = requests.get(base_url, headers=headers, params=params)
-    
-    # 상태 코드를 확인하여 오류 처리 추가
+
     if response.status_code == 200:
         return response.url
     elif response.status_code == 403:
         st.write("API 접근 권한 오류입니다. Client ID와 Secret을 확인하세요.")
-    elif response.status_code == 400:
-        st.write("잘못된 요청입니다. 요청 파라미터를 확인하세요.")
     else:
         st.write(f"지도를 불러오는데 실패했습니다. 오류 코드: {response.status_code}")
     return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시_1422")
+st.title("출발지와 도착지의 거리 및 지도 표시 1428")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
