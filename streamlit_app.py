@@ -1,13 +1,11 @@
 import streamlit as st
 import requests
+import urllib.parse
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 설정
-client_id = "buzzqnu77m"
-client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
-
-#client_id = "xbajg8w92p"
-#client_secret = "MPSE5rkfxFRJT98AgbzRoidsGBu3xjT1h93tKSac"
+client_id = "xbajg8w92p"
+client_secret = "MPSE5rkfxFRJT98AgbzRoidsGBu3xjT1h93tKSac"
 
 # 좌표를 받아오는 함수
 def get_coordinates(address):
@@ -16,14 +14,17 @@ def get_coordinates(address):
         "X-NCP-APIGW-API-KEY-ID": client_id,
         "X-NCP-APIGW-API-KEY": client_secret
     }
-    params = {"query": address}
+    params = {"query": urllib.parse.quote(address)}  # 주소를 URL 인코딩하여 쿼리 파라미터로 전달
     response = requests.get(url, headers=headers, params=params)
+    
     if response.status_code == 200:
         data = response.json()
         if data['addresses']:
             lat = float(data['addresses'][0]['y'])
             lon = float(data['addresses'][0]['x'])
             return lat, lon
+    else:
+        print(f"Error: {response.status_code}")
     return None
 
 # 두 좌표 간의 거리를 계산하는 함수 (Haversine 공식 사용)
@@ -70,7 +71,7 @@ def create_naver_map_url(start_coord, end_coord):
     return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시1409")
+st.title("출발지와 도착지의 거리 및 지도 표시_1418")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
