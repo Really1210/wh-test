@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 정보
 CLIENT_ID = 'buzzqnu77m'
@@ -25,8 +26,20 @@ def get_coordinates(address):
     else:
         return None, None
 
+# 두 좌표 사이의 거리 계산 (단위: km)
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371.0  # 지구 반지름 (km)
+    
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    
+    a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    
+    return R * c
+
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산 및 네이버 지도 표기 1555")
+st.title("출발지와 도착지 간 거리 계산 및 네이버 지도 표기 1600")
 
 start_address = st.text_input("출발지 주소를 입력하세요")
 end_address = st.text_input("도착지 주소를 입력하세요")
@@ -36,6 +49,14 @@ if st.button("거리 계산 및 지도 표시"):
     end_lat, end_lon = get_coordinates(end_address)
     
     if start_lat and end_lat:
+        # 위경도 출력
+        st.write(f"출발지: {start_address} -> 위도: {start_lat}, 경도: {start_lon}")
+        st.write(f"도착지: {end_address} -> 위도: {end_lat}, 경도: {end_lon}")
+        
+        # 거리 계산
+        distance = calculate_distance(start_lat, start_lon, end_lat, end_lon)
+        st.success(f"출발지와 도착지 사이의 거리는 {distance:.2f} km 입니다.")
+        
         # 지도 표시용 HTML
         map_html = f"""
         <html>
