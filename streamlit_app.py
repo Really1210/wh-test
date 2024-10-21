@@ -3,12 +3,12 @@ import requests
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 설정
-client_id = "whchoi86@naver.com "
-client_secret = "prince1367!"
+client_id = "4o5tcn3p7v"
+client_secret = "YOUR_NAVER_CLIENT_SECRET"
 
 def get_coordinates(address):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
-    headers = {"4o5tcn3p7v": client_id, "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8": client_secret}
+    headers = {"X-NCP-APIGW-API-KEY-ID": client_id, "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8": client_secret}
     params = {"query": address}
     response = requests.get(url, headers=headers, params=params)
     if response.status_code == 200:
