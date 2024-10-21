@@ -37,8 +37,15 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     
     return R * c
 
+# 데이터셋의 값을 변경하는 함수 (4번 항목 적용)
+def update_dataset_values(database):
+    for item in database:
+        # 예: 모든 아이템의 특정 컬럼 값 변경
+        item['column_to_update'] = 'new_value'
+    return database
+
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기1613")
+st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기 1626")
 
 start_address = st.text_input("출발지 주소를 입력하세요")
 end_address = st.text_input("도착지 주소를 입력하세요")
@@ -92,3 +99,8 @@ if st.button("거리 계산 및 지도 표시"):
         st.components.v1.html(map_html, height=600)
     else:
         st.error("좌표를 찾을 수 없는 주소가 있습니다. 다시 시도해주세요.")
+
+# 데이터셋 값 업데이트 적용 (예시 데이터베이스)
+database = [{'id': 1, 'column_to_update': 'old_value'}, {'id': 2, 'column_to_update': 'old_value'}]
+updated_database = update_dataset_values(database)
+st.write(updated_database)
