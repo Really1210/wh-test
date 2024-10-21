@@ -4,11 +4,11 @@ from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 설정
 client_id = "4o5tcn3p7v"
-client_secret = "YOUR_NAVER_CLIENT_SECRET"
+client_secret = "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8"
 
 def get_coordinates(address):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
-    headers = {"X-NCP-APIGW-API-KEY-ID": client_id, "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8": client_secret}
+    headers = {"X-NCP-APIGW-API-KEY-ID": client_id, "X-Naver-Client-Secret": client_secret}
     params = {"query": address}
     response = requests.get(url, headers=headers, params=params)
     if response.status_code == 200:
