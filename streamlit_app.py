@@ -3,8 +3,8 @@ import requests
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 설정
-client_id = "4o5tcn3p7v"
-client_secret = "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8"
+client_id = "buzzqnu77m"
+client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
 
 def get_coordinates(address):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
@@ -35,7 +35,7 @@ def calculate_distance(coord1, coord2):
     return distance
 
 # Streamlit 앱 UI
-st.title("두 지점 사이의 거리 계산기_1133")
+st.title("두 지점 사이의 거리 계산기_1138")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
