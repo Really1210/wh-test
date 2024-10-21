@@ -91,4 +91,4 @@ if st.button("계산 및 지도 표시"):
         # 지도 표시
         map_url = create_naver_map_url(start_coord, end_coord)
         if map_url:
-            st.image(map_url, caption="출발: 동그라미, 도착: 별")
+            st.image(map_url)
