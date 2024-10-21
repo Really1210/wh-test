@@ -8,7 +8,7 @@ client_secret = "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8"
 
 def get_coordinates(address):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
-    headers = {"X-NCP-APIGW-API-KEY-ID": client_id, "X-Naver-Client-Secret": client_secret}
+    headers = {"X-NCP-APIGW-API-KEY-ID": client_id, "X-NCP-APIGW-API-KEY": client_secret}
     params = {"query": address}
     response = requests.get(url, headers=headers, params=params)
     if response.status_code == 200:
@@ -35,7 +35,7 @@ def calculate_distance(coord1, coord2):
     return distance
 
 # Streamlit 앱 UI
-st.title("두 지점 사이의 거리 계산기")
+st.title("두 지점 사이의 거리 계산기_1133")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
@@ -44,8 +44,10 @@ if st.button("거리 계산"):
     start_coord = get_coordinates(start_address)
     end_coord = get_coordinates(end_address)
     
-    if start_coord and end_coord:
+    if not start_coord:
+        st.write("출발 주소를 확인해주세요.")
+    elif not end_coord:
+        st.write("도착 주소를 확인해주세요.")
+    else:
         distance = calculate_distance(start_coord, end_coord)
         st.write(f"두 지점 사이의 거리는 {distance:.2f} km 입니다.")
-    else:
-        st.write("주소를 확인해주세요.")
