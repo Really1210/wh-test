@@ -5,8 +5,8 @@ from math import radians, sin, cos, sqrt, atan2
 # 네이버 API 정보
 CLIENT_ID = 'buzzqnu77m'
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
-NAVER_MAP_CLIENT_ID = 'l1vpx1wn5s'
-NAVER_MAP_CLIENT_SECRET = 'uXxTGD601rp8u8WjwesxBHyyLxY50VKa1VAYb8Co'
+NAVER_MAP_CLIENT_ID = 'buzzqnu77m'
+NAVER_MAP_CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
 
 # Geocoding API 호출 함수
 def get_coordinates(address):
@@ -39,7 +39,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산 및 네이버 지도 표기 1600")
+st.title("출발지와 도착지 간 거리 계산 및 네이버 지도 표기 1607")
 
 start_address = st.text_input("출발지 주소를 입력하세요")
 end_address = st.text_input("도착지 주소를 입력하세요")
