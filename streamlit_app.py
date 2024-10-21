@@ -19,28 +19,29 @@ def get_coordinates(address):
             return lat, lon
     return None
 
-def calculate_distance(coord1, coord2):
-    # Haversine 공식 사용
-    R = 6371.0  # 지구 반지름 (킬로미터)
-    lat1, lon1 = radians(coord1[0]), radians(coord1[1])
-    lat2, lon2 = radians(coord2[0]), radians(coord2[1])
-
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-
-    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-    distance = R * c
-    return distance
+def create_naver_map_url(start_coord, end_coord):
+    base_url = "https://naveropenapi.apigw.ntruss.com/map-static/v2/raster"
+    params = {
+        "w": 600,  # 지도 너비
+        "h": 400,  # 지도 높이
+        "center": f"{(start_coord[1] + end_coord[1]) / 2},{(start_coord[0] + end_coord[0]) / 2}",
+        "level": 11,  # 줌 레벨
+        "markers": f"type:d|size:mid|pos:{start_coord[1]}%20{start_coord[0]}|icon:https://i.imgur.com/zlMBxw1.png,type:s|pos:{end_coord[1]}%20{end_coord[0]}|icon:https://i.imgur.com/nVtI3wq.png"
+    }
+    headers = {
+        "X-NCP-APIGW-API-KEY-ID": client_id,
+        "X-NCP-APIGW-API-KEY": client_secret,
+    }
+    response = requests.get(base_url, headers=headers, params=params)
+    return response.url
 
 # Streamlit 앱 UI
-st.title("두 지점 사이의 거리 계산기_1138")
+st.title("출발지와 도착지를 지도에 표시 13:27")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
 
-if st.button("거리 계산"):
+if st.button("지도 그리기"):
     start_coord = get_coordinates(start_address)
     end_coord = get_coordinates(end_address)
     
@@ -49,5 +50,5 @@ if st.button("거리 계산"):
     elif not end_coord:
         st.write("도착 주소를 확인해주세요.")
     else:
-        distance = calculate_distance(start_coord, end_coord)
-        st.write(f"두 지점 사이의 거리는 {distance:.2f} km 입니다.")
+        map_url = create_naver_map_url(start_coord, end_coord)
+        st.image(map_url, caption="출발: 동그라미, 도착: 별")
