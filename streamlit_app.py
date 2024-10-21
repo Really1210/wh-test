@@ -6,8 +6,8 @@ from math import radians, sin, cos, sqrt, atan2
 client_id = "buzzqnu77m"
 client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
 
-client_id_1 = "jh3peldpx7"
-client_secret_1 = "lGU0KsZ0TXFyzJ0kvZQmYVGblhqcNWpoN2cRkvO6"
+client_id_1 = "4o5tcn3p7v"
+client_secret_1 = "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8"
 
 # 좌표를 받아오는 함수
 def get_coordinates(address):
