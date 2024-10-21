@@ -7,6 +7,7 @@ CLIENT_ID = 'buzzqnu77m'
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
 GOOGLE_MAP_API_KEY = 'AIzaSyBnCSqt1jpfJIJXNevyQHQ-7ZZ2K3ucoVA'
 
+
 # Geocoding API 호출 함수
 def get_coordinates(address):
     """
@@ -68,8 +69,8 @@ if st.button("거리 계산 및 지도 표시"):
         # 네이버 지도 HTML 생성 및 표시
         map_html = f"""
         <iframe
-        src="https://map.naver.com/v5/?c={start_lon},{start_lat},14,0,0,0&places={start_lon},{start_lat},{end_lon},{end_lat}"
-        width="100%" height="500px" frameborder="0">
+        src="https://map.naver.com/v5/maps?c={start_lon},{start_lat},14,0,0&markers=type:d|{start_lat},{start_lon}|{end_lat},{end_lon}"
+        width="100%" height="500px" frameborder="0" allowfullscreen>
         </iframe>
         """
         
