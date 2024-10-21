@@ -58,12 +58,14 @@ def create_naver_map_url(start_coord, end_coord):
     # 상태 코드를 확인하여 오류 처리 추가
     if response.status_code == 200:
         return response.url
+    elif response.status_code == 403:
+        st.write("API 접근 권한 오류입니다. Client ID와 Secret을 확인하세요.")
     else:
         st.write(f"지도를 불러오는데 실패했습니다. 오류 코드: {response.status_code}")
-        return None
+    return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시_13:41")
+st.title("출발지와 도착지의 거리 및 지도 표시_13:44")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
@@ -89,5 +91,3 @@ if st.button("계산 및 지도 표시"):
         map_url = create_naver_map_url(start_coord, end_coord)
         if map_url:
             st.image(map_url, caption="출발: 동그라미, 도착: 별")
-        else:
-            st.write("지도를 불러오는 데 실패했습니다.")
