@@ -5,7 +5,7 @@ from math import radians, sin, cos, sqrt, atan2
 # 네이버 API 정보
 CLIENT_ID = 'buzzqnu77m'
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
-GOOGLE_MAP_API_KEY = 'AIzaSyBJLVjna4UFp4I6NpfI_HodaplzWcAXkqI'
+GOOGLE_MAP_API_KEY = 'AIzaSyBnCSqt1jpfJIJXNevyQHQ-7ZZ2K3ucoVA'
 
 # Geocoding API 호출 함수
 def get_coordinates(address):
@@ -45,7 +45,7 @@ def update_dataset_values(database):
     return database
 
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기 1626")
+st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기 1628")
 
 start_address = st.text_input("출발지 주소를 입력하세요")
 end_address = st.text_input("도착지 주소를 입력하세요")
