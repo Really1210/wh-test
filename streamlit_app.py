@@ -3,8 +3,8 @@ import requests
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 설정
-client_id = "xbajg8w92p"
-client_secret = "MPSE5rkfxFRJT98AgbzRoidsGBu3xjT1h93tKSac"
+client_id = "buzzqnu77m"
+client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
 
 # 좌표를 받아오는 함수
 def get_coordinates(address):
