@@ -7,8 +7,12 @@ CLIENT_ID = 'buzzqnu77m'
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
 GOOGLE_MAP_API_KEY = 'AIzaSyBnCSqt1jpfJIJXNevyQHQ-7ZZ2K3ucoVA'
 
+
 # Geocoding API 호출 함수
 def get_coordinates(address):
+    """
+    입력된 주소를 네이버 Geocoding API를 사용하여 위도, 경도로 변환하는 함수.
+    """
     url = f"https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLIENT_ID,
@@ -25,8 +29,12 @@ def get_coordinates(address):
     else:
         return None, None
 
-# 두 좌표 사이의 거리 계산 (단위: km)
+# 두 좌표 사이의 거리 계산 함수
 def calculate_distance(lat1, lon1, lat2, lon2):
+    """
+    Haversine 공식을 사용하여 두 지점 사이의 거리를 계산하는 함수.
+    단위는 km로 반환.
+    """
     R = 6371.0  # 지구 반지름 (km)
     
     dlat = radians(lat2 - lat1)
@@ -37,33 +45,28 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     
     return R * c
 
-# 데이터셋의 값을 변경하는 함수 (4번 항목 적용)
-def update_dataset_values(database):
-    for item in database:
-        # 예: 모든 아이템의 특정 컬럼 값 변경
-        item['column_to_update'] = 'new_value'
-    return database
-
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기 1705 ")
+st.title("출발지와 도착지 간 거리 계산 및 구글 지도 표기 1728 ")
 
+# 사용자로부터 출발지와 도착지 주소 입력 받기
 start_address = st.text_input("출발지 주소를 입력하세요")
 end_address = st.text_input("도착지 주소를 입력하세요")
 
+# 거리 계산 및 지도 표시 버튼
 if st.button("거리 계산 및 지도 표시"):
     start_lat, start_lon = get_coordinates(start_address)
     end_lat, end_lon = get_coordinates(end_address)
     
     if start_lat and end_lat:
-        # 위경도 출력
+        # 입력된 주소의 위도, 경도 출력
         st.write(f"출발지: {start_address} -> 위도: {start_lat}, 경도: {start_lon}")
         st.write(f"도착지: {end_address} -> 위도: {end_lat}, 경도: {end_lon}")
         
-        # 거리 계산
+        # 거리 계산 결과 출력
         distance = calculate_distance(start_lat, start_lon, end_lat, end_lon)
         st.success(f"출발지와 도착지 사이의 거리는 {distance:.2f} km 입니다.")
         
-        # 구글 지도 표시용 HTML
+        # 구글 지도 HTML 생성 및 표시
         map_html = f"""
         <html>
         <head>
@@ -95,12 +98,7 @@ if st.button("거리 계산 및 지도 표시"):
         </html>
         """
         
-        # HTML을 스트림릿에서 표시
+        # 구글 지도를 스트림릿 내에 표시
         st.components.v1.html(map_html, height=600)
     else:
         st.error("좌표를 찾을 수 없는 주소가 있습니다. 다시 시도해주세요.")
-
-# 데이터셋 값 업데이트 적용 (예시 데이터베이스)
-database = [{'id': 1, 'column_to_update': 'old_value'}, {'id': 2, 'column_to_update': 'old_value'}]
-updated_database = update_dataset_values(database)
-st.write(updated_database)
