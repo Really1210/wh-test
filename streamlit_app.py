@@ -6,8 +6,8 @@ from math import radians, sin, cos, sqrt, atan2
 client_id = "buzzqnu77m"
 client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
 
-client_id_1 = "4o5tcn3p7v"
-client_secret_1 = "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8"
+client_id_1 = "l1vpx1wn5s"
+client_secret_1 = "uXxTGD601rp8u8WjwesxBHyyLxY50VKa1VAYb8Co"
 
 # 좌표를 받아오는 함수
 def get_coordinates(address):
@@ -68,7 +68,7 @@ def create_naver_map_url(start_coord, end_coord):
     return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시_1401")
+st.title("출발지와 도착지의 거리 및 지도 표시_1402")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
