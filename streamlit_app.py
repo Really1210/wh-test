@@ -73,7 +73,7 @@ def create_naver_map_url(start_coord, end_coord):
     return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시 1513")
+st.title("출발지와 도착지의 거리 및 지도 표시 1514")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
