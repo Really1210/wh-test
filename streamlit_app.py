@@ -6,10 +6,6 @@ from math import radians, sin, cos, sqrt, atan2
 client_id = "buzzqnu77m"
 client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
 
-import streamlit as st
-import requests
-from math import radians, sin, cos, sqrt, atan2
-
 # 좌표를 받아오는 함수
 def get_coordinates(address):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
@@ -58,12 +54,16 @@ def create_naver_map_url(start_coord, end_coord):
         "X-NCP-APIGW-API-KEY": client_secret
     }
     response = requests.get(base_url, headers=headers, params=params)
+    
+    # 상태 코드를 확인하여 오류 처리 추가
     if response.status_code == 200:
-        return response.url  # 이미지 URL 반환
-    return None
+        return response.url
+    else:
+        st.write(f"지도를 불러오는데 실패했습니다. 오류 코드: {response.status_code}")
+        return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시_13:35")
+st.title("출발지와 도착지의 거리 및 지도 표시_13:41")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
@@ -77,6 +77,10 @@ if st.button("계산 및 지도 표시"):
     elif not end_coord:
         st.write("도착 주소를 확인해주세요.")
     else:
+        # 두 지점의 위도와 경도를 출력
+        st.write(f"출발지 위도: {start_coord[0]:.6f}, 경도: {start_coord[1]:.6f}")
+        st.write(f"도착지 위도: {end_coord[0]:.6f}, 경도: {end_coord[1]:.6f}")
+        
         # 두 지점 간 거리 계산
         distance = calculate_distance(start_coord, end_coord)
         st.write(f"두 지점 사이의 거리는 {distance:.2f} km 입니다.")
