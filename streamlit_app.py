@@ -59,8 +59,8 @@ def create_naver_map_url(start_coord, end_coord):
                    f"type:s|pos:{end_coord[1]}%20{end_coord[0]}|icon:https://i.imgur.com/nVtI3wq.png"  # 별 마커
     }
     headers = {
-        "X-NCP-APIGW-API-KEY-ID": client_id,
-        "X-NCP-APIGW-API-KEY": client_secret
+        "X-NCP-APIGW-API-KEY-ID": "xbajg8w92p",
+        "X-NCP-APIGW-API-KEY": "MPSE5rkfxFRJT98AgbzRoidsGBu3xjT1h93tKSac"
     }
     response = requests.get(base_url, headers=headers, params=params)
 
@@ -73,7 +73,7 @@ def create_naver_map_url(start_coord, end_coord):
     return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시 1437")
+st.title("출발지와 도착지의 거리 및 지도 표시 1441")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
