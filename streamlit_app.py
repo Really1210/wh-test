@@ -6,6 +6,9 @@ from math import radians, sin, cos, sqrt, atan2
 client_id = "buzzqnu77m"
 client_secret = "QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN"
 
+client_id_1 = "4o5tcn3p7v"
+client_secret_1 = "YeJgVs2yn3fWYlm1OugqW3LJFAjsxuLwcw7EDwf8"
+
 # 좌표를 받아오는 함수
 def get_coordinates(address):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
@@ -50,8 +53,8 @@ def create_naver_map_url(start_coord, end_coord):
                   f"type:s|pos:{end_coord[1]}%20{end_coord[0]}|icon:https://i.imgur.com/nVtI3wq.png"  # 별 마커
     }
     headers = {
-        "X-NCP-APIGW-API-KEY-ID": client_id,
-        "X-NCP-APIGW-API-KEY": client_secret
+        "X-NCP-APIGW-API-KEY-ID": client_id_1,
+        "X-NCP-APIGW-API-KEY": client_secret_1
     }
     response = requests.get(base_url, headers=headers, params=params)
     
@@ -65,7 +68,7 @@ def create_naver_map_url(start_coord, end_coord):
     return None
 
 # Streamlit 앱 UI
-st.title("출발지와 도착지의 거리 및 지도 표시_13:44")
+st.title("출발지와 도착지의 거리 및 지도 표시_13:45")
 
 start_address = st.text_input("출발 주소 입력")
 end_address = st.text_input("도착 주소 입력")
