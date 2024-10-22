@@ -162,7 +162,7 @@ if uploaded_file is not None:
                     <div class="legend">
                         <b>범례</b><br>
                         <span style="color: red;">● 출발</span><br>
-                        <span style="color: yellow;">● 도착</span><br>
+                        <span style="color: orange;">● 도착</span><br>
                         <span style="color: blue;">● 가까운 주소</span>
                     </div>
                     """, unsafe_allow_html=True)
