@@ -45,73 +45,110 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     
     return R * c
 
-# 스트림릿 UI 구성
-st.title("출발지와 도착지 표시 및 거리 계산 (pydeck)")
-
-# 사용자로부터 출발지와 도착지 주소 입력 받기
-start_address = st.text_input("출발지 주소를 입력하세요")
-end_address = st.text_input("도착지 주소를 입력하세요")
-
-# 거리 계산 및 지도 표시 버튼
-if st.button("거리 계산 및 지도 표시"):
-    start_lat, start_lon = get_coordinates(start_address)
-    end_lat, end_lon = get_coordinates(end_address)
+# 가장 가까운 주소를 찾는 함수
+def find_closest_location(lat1, lon1, df):
+    """
+    주어진 위도(lat1), 경도(lon1)에 가장 가까운 CSV 파일의 주소를 반환하는 함수.
+    """
+    closest_distance = float('inf')
+    closest_location = None
+    closest_lat = None
+    closest_lon = None
     
-    if start_lat and end_lat:
-        # 입력된 주소의 위도, 경도 출력
-        st.write(f"출발지: {start_address} -> 위도: {start_lat}, 경도: {start_lon}")
-        st.write(f"도착지: {end_address} -> 위도: {end_lat}, 경도: {end_lon}")
-        
-        # 거리 계산 결과 출력
-        distance = calculate_distance(start_lat, start_lon, end_lat, end_lon)
-        st.success(f"출발지와 도착지 사이의 거리는 {distance:.2f} km 입니다.")
-        
-        # 출발지와 도착지 데이터 생성
-        data = pd.DataFrame({
-            'lat': [start_lat, end_lat],
-            'lon': [start_lon, end_lon],
-            'name': ['출발', '도착']
-        })
-        
-        # pydeck Layer 설정
-        layer = pdk.Layer(
-            'ScatterplotLayer',
-            data,
-            get_position='[lon, lat]',
-            get_color='[200, 30, 0, 160]',
-            get_radius=100,  # 원 크기 조정 (단위: 미터)
-            pickable=True
-        )
-        
-        # 텍스트 라벨 레이어 추가
-        text_layer = pdk.Layer(
-            "TextLayer",
-            data,
-            get_position='[lon, lat]',
-            get_text='name',
-            get_size=16,
-            get_color=[0, 0, 0],
-            get_angle=0,
-            get_alignment_baseline="'bottom'"
-        )
+    for index, row in df.iterrows():
+        lat2, lon2 = get_coordinates(row['주소'])
+        if lat2 and lon2:
+            distance = calculate_distance(lat1, lon1, lat2, lon2)
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_location = row['명칭']
+                closest_lat = lat2
+                closest_lon = lon2
+    
+    return closest_location, closest_lat, closest_lon
 
-        # pydeck Deck 생성
-        view_state = pdk.ViewState(
-            latitude=(start_lat + end_lat) / 2,
-            longitude=(start_lon + end_lon) / 2,
-            zoom=10,
-            pitch=50,
-        )
+# 스트림릿 UI 구성
+st.title("출발지와 도착지 표시 및 가장 가까운 주소 찾기 (pydeck)")
 
-        # Deck에 Layer 추가
-        r = pdk.Deck(
-            layers=[layer, text_layer],
-            initial_view_state=view_state,
-            tooltip={"text": "{name}"}
-        )
+# CSV 파일 업로드
+uploaded_file = st.file_uploader("명칭과 주소가 포함된 CSV 파일을 업로드하세요", type="csv")
 
-        # pydeck 맵 표시
-        st.pydeck_chart(r)
-
+if uploaded_file is not None:
+    # CSV 파일 읽기
+    df = pd.read_csv(uploaded_file)
+    
+    # CSV 파일이 비어있지 않은지 확인
+    if len(df) == 0:
+        st.error("CSV 파일이 비어 있습니다.")
     else:
-        st.error("좌표를 찾을 수 없는 주소가 있습니다. 다시 시도해주세요.")
+        st.write(df)  # 파일 내용 표시
+        
+        # 사용자로부터 출발지와 도착지 주소 입력 받기
+        start_address = st.text_input("출발지 주소를 입력하세요")
+        end_address = st.text_input("도착지 주소를 입력하세요")
+        
+        if st.button("거리 계산 및 지도 표시"):
+            start_lat, start_lon = get_coordinates(start_address)
+            end_lat, end_lon = get_coordinates(end_address)
+            
+            if start_lat and end_lat:
+                # 입력된 주소의 위도, 경도 출력
+                st.write(f"출발지: {start_address} -> 위도: {start_lat}, 경도: {start_lon}")
+                st.write(f"도착지: {end_address} -> 위도: {end_lat}, 경도: {end_lon}")
+                
+                # 출발지에서 가장 가까운 주소 찾기
+                closest_name, closest_lat, closest_lon = find_closest_location(start_lat, start_lon, df)
+                
+                if closest_name:
+                    st.write(f"출발지와 가장 가까운 장소: {closest_name} -> 위도: {closest_lat}, 경도: {closest_lon}")
+                    
+                    # 출발지와 도착지, 가장 가까운 주소 데이터를 포함하는 DataFrame 생성
+                    data = pd.DataFrame({
+                        'lat': [start_lat, end_lat, closest_lat],
+                        'lon': [start_lon, end_lon, closest_lon],
+                        'name': ['출발', '도착', closest_name]
+                    })
+                    
+                    # pydeck Layer 설정
+                    layer = pdk.Layer(
+                        'ScatterplotLayer',
+                        data,
+                        get_position='[lon, lat]',
+                        get_color='[200, 30, 0, 160]',
+                        get_radius=100,  # 원 크기 조정 (단위: 미터)
+                        pickable=True
+                    )
+                    
+                    # 텍스트 라벨 레이어 추가
+                    text_layer = pdk.Layer(
+                        "TextLayer",
+                        data,
+                        get_position='[lon, lat]',
+                        get_text='name',
+                        get_size=16,
+                        get_color=[0, 0, 0],
+                        get_angle=0,
+                        get_alignment_baseline="'bottom'"
+                    )
+
+                    # pydeck Deck 생성
+                    view_state = pdk.ViewState(
+                        latitude=(start_lat + end_lat) / 2,
+                        longitude=(start_lon + end_lon) / 2,
+                        zoom=10,
+                        pitch=50,
+                    )
+
+                    # Deck에 Layer 추가
+                    r = pdk.Deck(
+                        layers=[layer, text_layer],
+                        initial_view_state=view_state,
+                        tooltip={"text": "{name}"}
+                    )
+
+                    # pydeck 맵 표시
+                    st.pydeck_chart(r)
+                else:
+                    st.error("가장 가까운 주소를 찾을 수 없습니다.")
+            else:
+                st.error("출발지 또는 도착지의 좌표를 찾을 수 없습니다.")
