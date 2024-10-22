@@ -115,7 +115,7 @@ if st.button("1. 개별 거리 계산"):
                             data,
                             get_position='[lon, lat]',
                             get_color='color',
-                            get_radius=150,  # 원 크기 조정 (단위: 미터)
+                            get_radius=50,  # 원 크기 조정 (단위: 미터)
                             pickable=True
                         )
                         
