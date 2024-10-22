@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import pandas as pd  # pandas 불러오기
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 정보
