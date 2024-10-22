@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
-import json
-import pandas as pd  # pandas 불러오기
+import pandas as pd
+import pydeck as pdk
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 정보
@@ -45,50 +45,8 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     
     return R * c
 
-# GeoJSON 객체 생성 함수
-def create_geojson(start_lat, start_lon, end_lat, end_lon):
-    geojson = {
-        "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [start_lon, start_lat]
-                },
-                "properties": {
-                    "popup": "출발지"
-                }
-            },
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [end_lon, end_lat]
-                },
-                "properties": {
-                    "popup": "도착지"
-                }
-            },
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": [
-                        [start_lon, start_lat],
-                        [end_lon, end_lat]
-                    ]
-                },
-                "properties": {
-                    "popup": "경로"
-                }
-            }
-        ]
-    }
-    return geojson
-
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 표시 및 거리 계산 (GeoJSON)")
+st.title("출발지와 도착지 표시 및 거리 계산 (pydeck)")
 
 # 사용자로부터 출발지와 도착지 주소 입력 받기
 start_address = st.text_input("출발지 주소를 입력하세요")
@@ -108,18 +66,52 @@ if st.button("거리 계산 및 지도 표시"):
         distance = calculate_distance(start_lat, start_lon, end_lat, end_lon)
         st.success(f"출발지와 도착지 사이의 거리는 {distance:.2f} km 입니다.")
         
-        # GeoJSON 생성
-        geojson_data = create_geojson(start_lat, start_lon, end_lat, end_lon)
-
-        # GeoJSON 데이터를 표시
-        st.write("GeoJSON 데이터:")
-        st.json(geojson_data)
-        
-        # GeoJSON을 지도에 표시
-        st.map(pd.DataFrame({
+        # 출발지와 도착지 데이터 생성
+        data = pd.DataFrame({
             'lat': [start_lat, end_lat],
-            'lon': [start_lon, end_lon]
-        }))
+            'lon': [start_lon, end_lon],
+            'name': ['출발', '도착']
+        })
+        
+        # pydeck Layer 설정
+        layer = pdk.Layer(
+            'ScatterplotLayer',
+            data,
+            get_position='[lon, lat]',
+            get_color='[200, 30, 0, 160]',
+            get_radius=100,  # 원 크기 조정 (단위: 미터)
+            pickable=True
+        )
+        
+        # 텍스트 라벨 레이어 추가
+        text_layer = pdk.Layer(
+            "TextLayer",
+            data,
+            get_position='[lon, lat]',
+            get_text='name',
+            get_size=16,
+            get_color=[0, 0, 0],
+            get_angle=0,
+            get_alignment_baseline="'bottom'"
+        )
+
+        # pydeck Deck 생성
+        view_state = pdk.ViewState(
+            latitude=(start_lat + end_lat) / 2,
+            longitude=(start_lon + end_lon) / 2,
+            zoom=10,
+            pitch=50,
+        )
+
+        # Deck에 Layer 추가
+        r = pdk.Deck(
+            layers=[layer, text_layer],
+            initial_view_state=view_state,
+            tooltip={"text": "{name}"}
+        )
+
+        # pydeck 맵 표시
+        st.pydeck_chart(r)
 
     else:
         st.error("좌표를 찾을 수 없는 주소가 있습니다. 다시 시도해주세요.")
