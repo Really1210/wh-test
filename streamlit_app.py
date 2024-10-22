@@ -104,7 +104,7 @@ if uploaded_file is not None:
                         'lat': [start_lat, end_lat, closest_lat],
                         'lon': [start_lon, end_lon, closest_lon],
                         'name': ['출발', '도착', closest_name],
-                        'color': [[255, 0, 0], [255, 255, 0], [0, 0, 255]]  # 빨간색, 노란색, 파란색
+                        'color': [[255, 0, 0], [255, 165, 0], [0, 0, 255]]  # 빨간색, 주황색(도착), 파란색
                     })
                     
                     # pydeck Layer 설정
@@ -113,7 +113,7 @@ if uploaded_file is not None:
                         data,
                         get_position='[lon, lat]',
                         get_color='color',
-                        get_radius=10,  # 원 크기 조정 (단위: 미터)
+                        get_radius=50,  # 원 크기 조정 (단위: 미터)
                         pickable=True
                     )
                     
