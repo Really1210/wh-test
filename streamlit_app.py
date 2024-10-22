@@ -18,7 +18,7 @@ def get_coordinates(address):
     params = {"query": address}
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
-    
+
     if data['meta']['totalCount'] > 0:
         lat = data['addresses'][0]['y']
         lon = data['addresses'][0]['x']
@@ -41,7 +41,7 @@ def find_closest_location(lat1, lon1, df):
     closest_location = None
     closest_lat = None
     closest_lon = None
-    
+
     for index, row in df.iterrows():
         lat2, lon2 = get_coordinates(row['주소'])
         if lat2 and lon2:
@@ -51,7 +51,7 @@ def find_closest_location(lat1, lon1, df):
                 closest_location = row['명칭']
                 closest_lat = lat2
                 closest_lon = lon2
-    return closest_location, closest_lat, closest_lon
+    return closest_location, closest_lat, closest_lon, closest_distance
 
 # 동적 지도 크기 설정 함수
 def calculate_zoom_level(distance):
@@ -78,23 +78,24 @@ if uploaded_file is not None:
         st.write(df)
         start_address = st.text_input("출발지 주소를 입력하세요")
         end_address = st.text_input("도착지 주소를 입력하세요")
-        
+
         if st.button("거리 계산 및 지도 표시"):
             start_lat, start_lon = get_coordinates(start_address)
             end_lat, end_lon = get_coordinates(end_address)
-            
+
             if start_lat and end_lat:
                 # 출발-도착 거리 계산
                 distance_start_end = calculate_distance(start_lat, start_lon, end_lat, end_lon)
                 st.write(f"출발지 -> 도착지 거리: {distance_start_end:.2f} km")
-                
+
                 # 출발지에서 가장 가까운 주소 찾기
-                closest_name, closest_lat, closest_lon = find_closest_location(start_lat, start_lon, df)
-                
-                if closest_name:
+                closest_name, closest_lat, closest_lon, closest_distance = find_closest_location(start_lat, start_lon, df)
+
+                # 출발지와 가장 가까운 주소의 거리가 출발지-도착지 거리보다 먼 경우
+                if closest_name and closest_distance < distance_start_end:
                     distance_start_closest = calculate_distance(start_lat, start_lon, closest_lat, closest_lon)
                     st.write(f"출발지 -> 가장 가까운 장소: {closest_name} ({distance_start_closest:.2f} km)")
-                    
+
                     # 지도 줌 레벨 계산
                     max_distance = max(distance_start_end, distance_start_closest)
                     zoom_level = calculate_zoom_level(max_distance)
@@ -106,7 +107,7 @@ if uploaded_file is not None:
                         'name': ['출발', '도착', closest_name],
                         'color': [[255, 0, 0], [255, 165, 0], [0, 0, 255]]  # 빨간색, 주황색(도착), 파란색
                     })
-                    
+
                     # pydeck Layer 설정
                     layer = pdk.Layer(
                         'ScatterplotLayer',
@@ -116,7 +117,7 @@ if uploaded_file is not None:
                         get_radius=150,  # 원 크기 조정 (단위: 미터)
                         pickable=True
                     )
-                    
+
                     # 텍스트 라벨 레이어 추가
                     text_layer = pdk.Layer(
                         "TextLayer",
@@ -145,7 +146,7 @@ if uploaded_file is not None:
 
                     # pydeck 맵 표시
                     st.pydeck_chart(r)
-                    
+
                     # 범례 추가
                     st.markdown("""
                     <style>
@@ -168,6 +169,6 @@ if uploaded_file is not None:
                     """, unsafe_allow_html=True)
 
                 else:
-                    st.error("가장 가까운 주소를 찾을 수 없습니다.")
+                    st.write("가장 가까운 장소가 없습니다.")
             else:
                 st.error("출발지 또는 도착지의 좌표를 찾을 수 없습니다.")
