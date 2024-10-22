@@ -91,84 +91,69 @@ if uploaded_file is not None:
                 # 출발지에서 가장 가까운 주소 찾기
                 closest_name, closest_lat, closest_lon, closest_distance = find_closest_location(start_lat, start_lon, df)
 
-                # 출발지와 가장 가까운 주소의 거리가 출발지-도착지 거리보다 먼 경우
-                if closest_name and closest_distance < distance_start_end:
-                    distance_start_closest = calculate_distance(start_lat, start_lon, closest_lat, closest_lon)
-                    st.write(f"출발지 -> 가장 가까운 장소: {closest_name} ({distance_start_closest:.2f} km)")
+                # 출발지와 가장 가까운 주소의 거리가 출발지-도착지 거리보다 먼 경우, 출발-도착만 지도에 표시
+                if closest_name and closest_distance >= distance_start_end:
+                    st.write("출발지와 도착지 거리가 더 가깝습니다. 출발-도착만 표시됩니다.")
+                    
+                    # 출발지와 도착지만 포함하는 데이터 생성
+                    data = pd.DataFrame({
+                        'lat': [start_lat, end_lat],
+                        'lon': [start_lon, end_lon],
+                        'name': ['출발', '도착'],
+                        'color': [[255, 0, 0], [255, 165, 0]]  # 빨간색, 주황색(도착)
+                    })
 
-                    # 지도 줌 레벨 계산
-                    max_distance = max(distance_start_end, distance_start_closest)
-                    zoom_level = calculate_zoom_level(max_distance)
-
-                    # 출발지, 도착지, 가장 가까운 주소 데이터를 포함하는 DataFrame 생성
+                else:
+                    st.write(f"출발지 -> 가장 가까운 장소: {closest_name} ({closest_distance:.2f} km)")
+                    
+                    # 출발지, 도착지, 가장 가까운 주소 데이터를 포함하는 데이터 생성
                     data = pd.DataFrame({
                         'lat': [start_lat, end_lat, closest_lat],
                         'lon': [start_lon, end_lon, closest_lon],
                         'name': ['출발', '도착', closest_name],
-                        'color': [[255, 0, 0], [255, 165, 0], [0, 0, 255]]  # 빨간색, 주황색(도착), 파란색
+                        'color': [[255, 0, 0], [255, 165, 0], [0, 0, 255]]  # 빨간색, 주황색, 파란색
                     })
 
-                    # pydeck Layer 설정
-                    layer = pdk.Layer(
-                        'ScatterplotLayer',
-                        data,
-                        get_position='[lon, lat]',
-                        get_color='color',
-                        get_radius=150,  # 원 크기 조정 (단위: 미터)
-                        pickable=True
-                    )
+                # 지도 줌 레벨 계산
+                zoom_level = calculate_zoom_level(distance_start_end)
 
-                    # 텍스트 라벨 레이어 추가
-                    text_layer = pdk.Layer(
-                        "TextLayer",
-                        data,
-                        get_position='[lon, lat]',
-                        get_text='name',
-                        get_size=16,
-                        get_color=[0, 0, 0],
-                        get_angle=0,
-                        get_alignment_baseline="'bottom'"
-                    )
+                # pydeck Layer 설정
+                layer = pdk.Layer(
+                    'ScatterplotLayer',
+                    data,
+                    get_position='[lon, lat]',
+                    get_color='color',
+                    get_radius=150,  # 원 크기 조정 (단위: 미터)
+                    pickable=True
+                )
 
-                    # pydeck Deck 생성
-                    view_state = pdk.ViewState(
-                        latitude=(start_lat + end_lat) / 2,
-                        longitude=(start_lon + end_lon) / 2,
-                        zoom=zoom_level,
-                        pitch=50,
-                    )
+                # 텍스트 라벨 레이어 추가
+                text_layer = pdk.Layer(
+                    "TextLayer",
+                    data,
+                    get_position='[lon, lat]',
+                    get_text='name',
+                    get_size=16,
+                    get_color=[0, 0, 0],
+                    get_angle=0,
+                    get_alignment_baseline="'bottom'"
+                )
 
-                    r = pdk.Deck(
-                        layers=[layer, text_layer],
-                        initial_view_state=view_state,
-                        tooltip={"text": "{name}"}
-                    )
+                # pydeck Deck 생성
+                view_state = pdk.ViewState(
+                    latitude=(start_lat + end_lat) / 2,
+                    longitude=(start_lon + end_lon) / 2,
+                    zoom=zoom_level,
+                    pitch=50,
+                )
 
-                    # pydeck 맵 표시
-                    st.pydeck_chart(r)
+                r = pdk.Deck(
+                    layers=[layer, text_layer],
+                    initial_view_state=view_state,
+                    tooltip={"text": "{name}"}
+                )
 
-                    # 범례 추가
-                    st.markdown("""
-                    <style>
-                        .legend {
-                            position: absolute;
-                            bottom: 20px;
-                            left: 20px;
-                            background-color: white;
-                            padding: 10px;
-                            border-radius: 5px;
-                            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-                        }
-                    </style>
-                    <div class="legend">
-                        <b>범례</b><br>
-                        <span style="color: red;">● 출발</span><br>
-                        <span style="color: orange;">● 도착</span><br>
-                        <span style="color: blue;">● 가까운 주소</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                else:
-                    st.write("가장 가까운 장소가 없습니다.")
+                # pydeck 맵 표시
+                st.pydeck_chart(r)
             else:
                 st.error("출발지 또는 도착지의 좌표를 찾을 수 없습니다.")
