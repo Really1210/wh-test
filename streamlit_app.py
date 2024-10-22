@@ -123,11 +123,11 @@ if uploaded_file is not None:
                     data,
                     get_position='[lon, lat]',
                     get_color='color',
-                    get_radius=150,  # 원 크기 조정 (단위: 미터)
+                    get_radius=30,  # 원 크기 조정 (단위: 미터)
                     pickable=True
                 )
 
-                # 텍스트 라벨 레이어 추가
+                # 텍스트 라벨 레이어 추가 (주석 포함)
                 text_layer = pdk.Layer(
                     "TextLayer",
                     data,
