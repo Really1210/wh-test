@@ -123,7 +123,7 @@ if uploaded_file is not None:
                     data,
                     get_position='[lon, lat]',
                     get_color='color',
-                    get_radius=30,  # 원 크기 조정 (단위: 미터)
+                    get_radius=150,  # 원 크기 조정 (단위: 미터)
                     pickable=True
                 )
 
@@ -133,7 +133,7 @@ if uploaded_file is not None:
                     data,
                     get_position='[lon, lat]',
                     get_text='name',
-                    get_size=16,
+                    get_size=24,  # 크기 조정
                     get_color=[0, 0, 0],
                     get_angle=0,
                     get_alignment_baseline="'bottom'"
