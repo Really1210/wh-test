@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 API_KEY = "aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D"
 
 # Streamlit UI 설정
-st.title("건축물 층수 조회")
+st.title("건축물 최고층 층수 조회")
 address = st.text_input("주소를 입력하세요 (예: 서울특별시 강남구 개포동 12번지):")
 
 if st.button("조회"):
@@ -19,7 +19,7 @@ if st.button("조회"):
         ji = "0000"          # 예시 지
 
         # API 요청 URL 구성
-        url = f"http://apis.data.go.kr/1613000/BldRgstService_v2/getBrTitleInfo?serviceKey={API_KEY}&sigunguCd={sigunguCd}&bjdongCd={bjdongCd}&bun={bun}&ji={ji}&_type=xml"
+        url = f"http://apis.data.go.kr/1613000/BldRgstService_v2/getBrFlrOulnInfo?serviceKey={API_KEY}&sigunguCd={sigunguCd}&bjdongCd={bjdongCd}&bun={bun}&ji={ji}&_type=xml"
         
         # API 요청 및 응답 처리
         response = requests.get(url)
@@ -30,12 +30,14 @@ if st.button("조회"):
             items = tree.findall('.//item')
             
             if items:
+                max_floor = 0
                 for item in items:
-                    # 지상층수 추출
-                    grndFlrCnt = item.find('grndFlrCnt').text if item.find('grndFlrCnt') is not None else "정보 없음"
-                    
-                    # 결과 출력
-                    st.write(f"지상층수: {grndFlrCnt}층")
+                    flrNo = int(item.find('flrNo').text) if item.find('flrNo') is not None else 0
+                    if flrNo > max_floor:
+                        max_floor = flrNo
+                
+                # 결과 출력
+                st.write(f"최고층 층수: {max_floor}층")
             else:
                 st.write("해당 주소에 대한 정보를 찾을 수 없습니다.")
         else:
