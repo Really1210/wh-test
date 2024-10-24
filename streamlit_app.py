@@ -5,8 +5,8 @@ import pydeck as pdk
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 정보
-CLIENT_ID = 'buzzqnu77m'
-CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
+CLIENT_ID = 'buzzqnu77m'  # 네이버 개발자 센터에서 발급받은 Client ID
+CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'  # 네이버 개발자 센터에서 발급받은 Client Secret
 
 # Geocoding API 호출 함수
 def get_coordinates(address):
@@ -16,7 +16,7 @@ def get_coordinates(address):
         "X-NCP-APIGW-API-KEY": CLIENT_SECRET
     }
     params = {"query": address}
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers, params=params, verify=False)  # SSL 인증 비활성화
     data = response.json()
     
     if data['meta']['totalCount'] > 0:
@@ -27,12 +27,12 @@ def get_coordinates(address):
         return None, None
 
 # 국토교통부 건축물대장정보 API 호출 함수
-SERVICE_KEY = 'YaNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D'  # 국토교통부 건축물대장 API 서비스키 입력
+SERVICE_KEY = 'aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D'  # 국토교통부 건축물대장 API 서비스키 입력
 
 def get_building_info(address):
     url = f"https://api.data.go.kr/openapi/tn_pubr_public_buldng_rl_buldng_api?serviceKey={SERVICE_KEY}&pageNo=1&numOfRows=10&format=json&sigunguCd=11680&bjdongCd=10300&platGbCd=0&bun=0001&ji=0000&startDate=20000101&endDate=20241231"
     params = {"sigunguCd": "시군구코드", "bjdongCd": "법정동코드", "platGbCd": "0", "bun": "0000", "ji": "0000"}
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, verify=False)  # SSL 인증 비활성화
     data = response.json()
     
     if 'response' in data and data['response']['header']['resultCode'] == "00":
