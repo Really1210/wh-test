@@ -8,9 +8,6 @@ from math import radians, sin, cos, sqrt, atan2
 CLIENT_ID = 'buzzqnu77m'
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
 
-# 국토교통부 API 정보
-SERVICE_KEY = 'aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D'  # Replace with your actual service key
-
 # Geocoding API 호출 함수
 def get_coordinates(address):
     url = f"https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
@@ -19,16 +16,15 @@ def get_coordinates(address):
         "X-NCP-APIGW-API-KEY": CLIENT_SECRET
     }
     params = {"query": address}
-    try:
-        response = requests.get(url, headers=headers, params=params, verify=False)
-        data = response.json()
-        if data['meta']['totalCount'] > 0:
-            lat = data['addresses'][0]['y']
-            lon = data['addresses'][0]['x']
-            return float(lat), float(lon)
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error fetching coordinates: {e}")
-    return None, None
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
+
+    if data['meta']['totalCount'] > 0:
+        lat = data['addresses'][0]['y']
+        lon = data['addresses'][0]['x']
+        return float(lat), float(lon)
+    else:
+        return None, None
 
 # 두 좌표 사이의 거리 계산 함수
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -38,32 +34,6 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
-
-# 국토교통부 API를 사용하여 건물 층수 가져오기
-def get_building_floors(sigunguCd, bjdongCd, bun, ji):
-    url = f"https://apis.data.go.kr/1613000/BldRgstService_v2/getBrExposInfo"
-    params = {
-        "sigunguCd": sigunguCd,
-        "bjdongCd": bjdongCd,
-        "bun": bun,
-        "ji": ji,
-        "ServiceKey": SERVICE_KEY,
-        "_type": "json"
-    }
-    
-    try:
-        response = requests.get(url, params=params, verify=False)
-        data = response.json()
-        
-        if 'response' in data and 'body' in data['response'] and 'items' in data['response']['body']:
-            items = data['response']['body']['items']
-            if items:
-                return items[0].get('grndFlrCnt', 'N/A'), items[0].get('ugrndFlrCnt', 'N/A')
-    
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error fetching building floors: {e}")
-    
-    return 'N/A', 'N/A'
 
 # 가장 가까운 주소를 찾는 함수
 def find_closest_location(lat1, lon1, df):
@@ -81,11 +51,6 @@ def find_closest_location(lat1, lon1, df):
                 closest_location = row['명칭']
                 closest_lat = lat2
                 closest_lon = lon2
-                
-                # Example of how to use the building floors function (replace with actual codes)
-                grndFlrCnt, ugrndFlrCnt = get_building_floors("11680", "10300", "0012", "0000")
-                st.write(f"지상층수: {grndFlrCnt}, 지하층수: {ugrndFlrCnt}")
-                
     return closest_location, closest_lat, closest_lon, closest_distance
 
 # 동적 지도 크기 설정 함수
@@ -135,18 +100,18 @@ if uploaded_file is not None:
                         'lat': [start_lat, end_lat],
                         'lon': [start_lon, end_lon],
                         'name': ['출발', '도착'],
-                        'color': [[255, 0, 0], [255, 165, 0]]  # 빨간색(출발), 주황색(도착)
+                        'color': [[255, 0, 0], [255, 165, 0]]  # 빨간색, 주황색(도착)
                     })
 
                 else:
                     st.write(f"출발지 -> 가장 가까운 장소: {closest_name} ({closest_distance:.2f} km)")
                     
-                    # 출발지, 도착지 및 가장 가까운 주소 데이터를 포함하는 데이터 생성
+                    # 출발지, 도착지, 가장 가까운 주소 데이터를 포함하는 데이터 생성
                     data = pd.DataFrame({
                         'lat': [start_lat, end_lat, closest_lat],
                         'lon': [start_lon, end_lon, closest_lon],
                         'name': ['출발', '도착', closest_name],
-                        'color': [[255, 0, 0], [255, 165, 0], [0, 0, 255]]  # 빨간색(출발), 주황색(도착), 파란색(가장 가까운 장소)
+                        'color': [[255, 0, 0], [255, 165, 0], [0, 0, 255]]  # 빨간색, 주황색, 파란색
                     })
 
                 # 지도 줌 레벨 계산
@@ -158,7 +123,7 @@ if uploaded_file is not None:
                     data,
                     get_position='[lon, lat]',
                     get_color='color',
-                    get_radius=50,
+                    get_radius=50,  # 원 크기 조정 (단위: 미터)
                     pickable=True
                 )
 
@@ -168,7 +133,7 @@ if uploaded_file is not None:
                     data,
                     get_position='[lon, lat]',
                     get_text='name',
-                    get_size=24,
+                    get_size=24,  # 크기 조정
                     get_color=[0, 0, 0],
                     get_angle=0,
                     get_alignment_baseline="'bottom'"
