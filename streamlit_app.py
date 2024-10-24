@@ -9,7 +9,7 @@ CLIENT_ID = 'buzzqnu77m'  # 네이버 개발자 센터에서 발급받은 Client
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'  # 네이버 개발자 센터에서 발급받은 Client Secret
 
 # Geocoding API 호출 함수
-def get_coordinates(address, verify_ssl=False):
+def get_coordinates(address, verify_ssl=True):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLIENT_ID,
@@ -29,16 +29,16 @@ def get_coordinates(address, verify_ssl=False):
         else:
             return None, None
     except requests.exceptions.SSLError as e:
-        st.error(f"SSL Error occurred: {e}")
+        st.error(f"SSL 인증서 오류가 발생했습니다: {e}")
         return None, None
     except requests.exceptions.RequestException as e:
-        st.error(f"HTTP Error occurred: {e}")
+        st.error(f"HTTP 요청 오류가 발생했습니다: {e}")
         return None, None
 
 # 국토교통부 건축물대장정보 API 호출 함수
 SERVICE_KEY = 'aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D'  # 국토교통부 건축물대장 API 서비스키 입력
 
-def get_building_info(address, verify_ssl=False):
+def get_building_info(address, verify_ssl=True):
     url = f"https://api.data.go.kr/openapi/tn_pubr_public_buldng_rl_buldng_api?serviceKey={SERVICE_KEY}&pageNo=1&numOfRows=10&format=json&sigunguCd=11680&bjdongCd=10300&platGbCd=0&bun=0001&ji=0000&startDate=20000101&endDate=20241231"
     params = {"sigunguCd": "시군구코드", "bjdongCd": "법정동코드", "platGbCd": "0", "bun": "0000", "ji": "0000"}
     
@@ -57,10 +57,10 @@ def get_building_info(address, verify_ssl=False):
         else:
             return None
     except requests.exceptions.SSLError as e:
-        st.error(f"SSL Error occurred: {e}")
+        st.error(f"SSL 인증서 오류가 발생했습니다: {e}")
         return None
     except requests.exceptions.RequestException as e:
-        st.error(f"HTTP Error occurred: {e}")
+        st.error(f"HTTP 요청 오류가 발생했습니다: {e}")
         return None
 
 # 두 좌표 사이의 거리 계산 함수
@@ -73,7 +73,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 # 가장 가까운 주소를 찾는 함수
-def find_closest_location(lat1, lon1, df, verify_ssl=False):
+def find_closest_location(lat1, lon1, df, verify_ssl=True):
     closest_distance = float('inf')
     closest_location = None
     closest_lat = None
@@ -104,15 +104,16 @@ if uploaded_file is not None:
         st.write(df)
         start_address = st.text_input("출발지 주소를 입력하세요")
         end_address = st.text_input("도착지 주소를 입력하세요")
-        
+        verify_ssl_option = st.checkbox("SSL 인증 사용", value=True)
+
         if st.button("거리 계산 및 지도 표시"):
-            start_lat, start_lon = get_coordinates(start_address)
-            end_lat, end_lon = get_coordinates(end_address)
+            start_lat, start_lon = get_coordinates(start_address, verify_ssl_option)
+            end_lat, end_lon = get_coordinates(end_address, verify_ssl_option)
 
             if start_lat and end_lat:
                 # 출발지 및 도착지 건물 정보 표시
-                building_info_start = get_building_info(start_address)
-                building_info_end = get_building_info(end_address)
+                building_info_start = get_building_info(start_address, verify_ssl_option)
+                building_info_end = get_building_info(end_address, verify_ssl_option)
 
                 if building_info_start:
                     st.write(f"출발지 건물 정보: {building_info_start['type']}, {building_info_start['floors']}층, {building_info_start['height']}m")
@@ -123,7 +124,7 @@ if uploaded_file is not None:
                 distance_start_end = calculate_distance(start_lat, start_lon, end_lat, end_lon)
                 st.write(f"출발지 -> 도착지 거리: {distance_start_end:.2f} km")
 
-                # 지도에 출발지, 도착지 표시
+                # 지도에 출발지, 도착지, 건물 정보 표시
                 data = pd.DataFrame({
                     'lat': [start_lat, end_lat],
                     'lon': [start_lon, end_lon],
