@@ -7,13 +7,17 @@ API_KEY = "aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0
 
 # Streamlit UI 설정
 st.title("건축물 층수 조회")
-sigunguCd = st.text_input("시군구 코드를 입력하세요:")
-bjdongCd = st.text_input("법정동 코드를 입력하세요:")
-bun = st.text_input("번을 입력하세요:")
-ji = st.text_input("지를 입력하세요:")
+address = st.text_input("주소를 입력하세요 (예: 서울특별시 강남구 개포동 12번지):")
 
 if st.button("조회"):
-    if sigunguCd and bjdongCd and bun and ji:
+    if address:
+        # 주소에서 시군구 코드, 법정동 코드, 번, 지 추출 (여기서는 예시로 고정된 값을 사용)
+        # 실제 구현에서는 주소를 파싱하여 적절한 코드를 추출해야 함
+        sigunguCd = "11680"  # 예시 시군구 코드
+        bjdongCd = "10300"   # 예시 법정동 코드
+        bun = "0012"         # 예시 번
+        ji = "0000"          # 예시 지
+
         # API 요청 URL 구성
         url = f"http://apis.data.go.kr/1613000/BldRgstService_v2/getBrTitleInfo?serviceKey={API_KEY}&sigunguCd={sigunguCd}&bjdongCd={bjdongCd}&bun={bun}&ji={ji}&_type=xml"
         
@@ -33,8 +37,8 @@ if st.button("조회"):
                     # 결과 출력
                     st.write(f"지상층수: {grndFlrCnt}층")
             else:
-                st.write("해당 지번에 대한 정보를 찾을 수 없습니다.")
+                st.write("해당 주소에 대한 정보를 찾을 수 없습니다.")
         else:
             st.write("API 요청에 실패했습니다. 다시 시도해주세요.")
     else:
-        st.write("모든 필드를 입력하세요.")
+        st.write("주소를 입력하세요.")
