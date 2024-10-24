@@ -18,11 +18,7 @@ def get_coordinates(address, verify_ssl=True):
     params = {"query": address}
     
     try:
-        if verify_ssl:
-            response = requests.get(url, headers=headers, params=params)
-        else:
-            response = requests.get(url, headers=headers, params=params, verify=False)  # SSL 인증 비활성화
-        
+        response = requests.get(url, headers=headers, params=params, verify=verify_ssl)
         response.raise_for_status()
         data = response.json()
 
@@ -47,11 +43,7 @@ def get_building_info(address, verify_ssl=True):
     params = {"sigunguCd": "시군구코드", "bjdongCd": "법정동코드", "platGbCd": "0", "bun": "0000", "ji": "0000"}
     
     try:
-        if verify_ssl:
-            response = requests.get(url, params=params)
-        else:
-            response = requests.get(url, params=params, verify=False)  # SSL 인증 비활성화
-
+        response = requests.get(url, params=params, verify=verify_ssl)
         response.raise_for_status()
         data = response.json()
 
@@ -112,16 +104,16 @@ if uploaded_file is not None:
         st.write(df)
         start_address = st.text_input("출발지 주소를 입력하세요")
         end_address = st.text_input("도착지 주소를 입력하세요")
-        verify_ssl = st.checkbox("SSL 인증 사용", value=True)
+        verify_ssl_option = st.checkbox("SSL 인증 사용", value=True)
 
         if st.button("거리 계산 및 지도 표시"):
-            start_lat, start_lon = get_coordinates(start_address, verify_ssl)
-            end_lat, end_lon = get_coordinates(end_address, verify_ssl)
+            start_lat, start_lon = get_coordinates(start_address, verify_ssl_option)
+            end_lat, end_lon = get_coordinates(end_address, verify_ssl_option)
 
             if start_lat and end_lat:
                 # 출발지 및 도착지 건물 정보 표시
-                building_info_start = get_building_info(start_address, verify_ssl)
-                building_info_end = get_building_info(end_address, verify_ssl)
+                building_info_start = get_building_info(start_address, verify_ssl_option)
+                building_info_end = get_building_info(end_address, verify_ssl_option)
 
                 if building_info_start:
                     st.write(f"출발지 건물 정보: {building_info_start['type']}, {building_info_start['floors']}층, {building_info_start['height']}m")
