@@ -5,63 +5,29 @@ import pydeck as pdk
 from math import radians, sin, cos, sqrt, atan2
 
 # 네이버 API 정보
-CLIENT_ID = 'buzzqnu77m'  # 네이버 개발자 센터에서 발급받은 Client ID
-CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'  # 네이버 개발자 센터에서 발급받은 Client Secret
+CLIENT_ID = 'buzzqnu77m'
+CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'
+
+# 국토교통부 API 정보
+SERVICE_KEY = 'aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D'  # Replace with your actual service key
 
 # Geocoding API 호출 함수
-def get_coordinates(address, verify_ssl=True):
-    url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
+def get_coordinates(address):
+    url = f"https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLIENT_ID,
         "X-NCP-APIGW-API-KEY": CLIENT_SECRET
     }
     params = {"query": address}
-    
-    try:
-        response = requests.get(url, headers=headers, params=params, verify=verify_ssl)
-        response.raise_for_status()
-        data = response.json()
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
 
-        if data['meta']['totalCount'] > 0:
-            lat = data['addresses'][0]['y']
-            lon = data['addresses'][0]['x']
-            return float(lat), float(lon)
-        else:
-            return None, None
-    except requests.exceptions.SSLError as e:
-        st.error(f"SSL 인증서 오류가 발생했습니다: {e}")
+    if data['meta']['totalCount'] > 0:
+        lat = data['addresses'][0]['y']
+        lon = data['addresses'][0]['x']
+        return float(lat), float(lon)
+    else:
         return None, None
-    except requests.exceptions.RequestException as e:
-        st.error(f"HTTP 요청 오류가 발생했습니다: {e}")
-        return None, None
-
-# 국토교통부 건축물대장정보 API 호출 함수
-SERVICE_KEY = 'aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D'  # 국토교통부 건축물대장 API 서비스키 입력
-
-def get_building_info(address, verify_ssl=True):
-    url = f"https://api.data.go.kr/openapi/tn_pubr_public_buldng_rl_buldng_api?serviceKey={SERVICE_KEY}&pageNo=1&numOfRows=10&format=json&sigunguCd=11680&bjdongCd=10300&platGbCd=0&bun=0001&ji=0000&startDate=20000101&endDate=20241231"
-    params = {"sigunguCd": "시군구코드", "bjdongCd": "법정동코드", "platGbCd": "0", "bun": "0000", "ji": "0000"}
-    
-    try:
-        response = requests.get(url, params=params, verify=verify_ssl)
-        response.raise_for_status()
-        data = response.json()
-
-        if 'response' in data and data['response']['header']['resultCode'] == "00":
-            building_info = data['response']['body']['items'][0]
-            return {
-                'height': building_info['height'],  # 건물 높이
-                'type': building_info['mainPurpsCdNm'],  # 건물 용도
-                'floors': building_info['totDongTotArea']  # 층수
-            }
-        else:
-            return None
-    except requests.exceptions.SSLError as e:
-        st.error(f"SSL 인증서 오류가 발생했습니다: {e}")
-        return None
-    except requests.exceptions.RequestException as e:
-        st.error(f"HTTP 요청 오류가 발생했습니다: {e}")
-        return None
 
 # 두 좌표 사이의 거리 계산 함수
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -72,15 +38,37 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
+# 국토교통부 API를 사용하여 건물 층수 가져오기
+def get_building_floors(sigunguCd, bjdongCd, bun, ji):
+    url = f"https://apis.data.go.kr/1613000/BldRgstService_v2/getBrExposInfo"
+    params = {
+        "sigunguCd": sigunguCd,
+        "bjdongCd": bjdongCd,
+        "bun": bun,
+        "ji": ji,
+        "ServiceKey": SERVICE_KEY,
+        "_type": "json"
+    }
+    
+    response = requests.get(url, params=params)
+    data = response.json()
+    
+    if 'response' in data and 'body' in data['response'] and 'items' in data['response']['body']:
+        items = data['response']['body']['items']
+        if items:
+            return items[0].get('grndFlrCnt', 'N/A'), items[0].get('ugrndFlrCnt', 'N/A')
+    
+    return 'N/A', 'N/A'
+
 # 가장 가까운 주소를 찾는 함수
-def find_closest_location(lat1, lon1, df, verify_ssl=True):
+def find_closest_location(lat1, lon1, df):
     closest_distance = float('inf')
     closest_location = None
     closest_lat = None
     closest_lon = None
 
     for index, row in df.iterrows():
-        lat2, lon2 = get_coordinates(row['주소'], verify_ssl)
+        lat2, lon2 = get_coordinates(row['주소'])
         if lat2 and lon2:
             distance = calculate_distance(lat1, lon1, lat2, lon2)
             if distance < closest_distance:
@@ -88,10 +76,26 @@ def find_closest_location(lat1, lon1, df, verify_ssl=True):
                 closest_location = row['명칭']
                 closest_lat = lat2
                 closest_lon = lon2
+                
+                # Example of how to use the building floors function (replace with actual codes)
+                grndFlrCnt, ugrndFlrCnt = get_building_floors("11680", "10300", "0012", "0000")
+                st.write(f"지상층수: {grndFlrCnt}, 지하층수: {ugrndFlrCnt}")
+                
     return closest_location, closest_lat, closest_lon, closest_distance
 
+# 동적 지도 크기 설정 함수
+def calculate_zoom_level(distance):
+    if distance < 1:
+        return 14  # 작은 거리일 때 높은 줌 레벨
+    elif distance < 5:
+        return 12
+    elif distance < 20:
+        return 10
+    else:
+        return 8  # 큰 거리일 때 낮은 줌 레벨
+
 # 스트림릿 UI 구성
-st.title("출발지와 도착지 표시 및 건물 정보 표기")
+st.title("출발지와 도착지 표시 및 가장 가까운 주소 찾기")
 
 # CSV 파일 업로드
 uploaded_file = st.file_uploader("CSV 파일 업로드", type="csv")
@@ -104,34 +108,46 @@ if uploaded_file is not None:
         st.write(df)
         start_address = st.text_input("출발지 주소를 입력하세요")
         end_address = st.text_input("도착지 주소를 입력하세요")
-        verify_ssl_option = st.checkbox("SSL 인증 사용", value=True)
 
         if st.button("거리 계산 및 지도 표시"):
-            start_lat, start_lon = get_coordinates(start_address, verify_ssl_option)
-            end_lat, end_lon = get_coordinates(end_address, verify_ssl_option)
+            start_lat, start_lon = get_coordinates(start_address)
+            end_lat, end_lon = get_coordinates(end_address)
 
             if start_lat and end_lat:
-                # 출발지 및 도착지 건물 정보 표시
-                building_info_start = get_building_info(start_address, verify_ssl_option)
-                building_info_end = get_building_info(end_address, verify_ssl_option)
-
-                if building_info_start:
-                    st.write(f"출발지 건물 정보: {building_info_start['type']}, {building_info_start['floors']}층, {building_info_start['height']}m")
-                if building_info_end:
-                    st.write(f"도착지 건물 정보: {building_info_end['type']}, {building_info_end['floors']}층, {building_info_end['height']}m")
-
                 # 출발-도착 거리 계산
                 distance_start_end = calculate_distance(start_lat, start_lon, end_lat, end_lon)
                 st.write(f"출발지 -> 도착지 거리: {distance_start_end:.2f} km")
 
-                # 지도에 출발지, 도착지, 건물 정보 표시
-                data = pd.DataFrame({
-                    'lat': [start_lat, end_lat],
-                    'lon': [start_lon, end_lon],
-                    'name': ['출발', '도착'],
-                    'color': [[255, 0, 0], [255, 165, 0]]
-                })
+                # 출발지에서 가장 가까운 주소 찾기
+                closest_name, closest_lat, closest_lon, closest_distance = find_closest_location(start_lat, start_lon, df)
 
+                # 출발지와 가장 가까운 주소의 거리가 출발지-도착지 거리보다 먼 경우, 출발-도착만 지도에 표시
+                if closest_name and closest_distance >= distance_start_end:
+                    st.write("출발지와 도착지 거리가 더 가깝습니다. 출발-도착만 표시됩니다.")
+                    
+                    # 출발지와 도착지만 포함하는 데이터 생성
+                    data = pd.DataFrame({
+                        'lat': [start_lat, end_lat],
+                        'lon': [start_lon, end_lon],
+                        'name': ['출발', '도착'],
+                        'color': [[255, 0, 0], [255, 165, 0]]  # 빨간색(출발), 주황색(도착)
+                    })
+
+                else:
+                    st.write(f"출발지 -> 가장 가까운 장소: {closest_name} ({closest_distance:.2f} km)")
+                    
+                    # 출발지, 도착지 및 가장 가까운 주소 데이터를 포함하는 데이터 생성
+                    data = pd.DataFrame({
+                        'lat': [start_lat, end_lat, closest_lat],
+                        'lon': [start_lon, end_lon, closest_lon],
+                        'name': ['출발', '도착', closest_name],
+                        'color': [[255, 0, 0], [255, 165, 0], [0, 0, 255]]  # 빨간색(출발), 주황색(도착), 파란색(가장 가까운 장소)
+                    })
+
+                # 지도 줌 레벨 계산
+                zoom_level = calculate_zoom_level(distance_start_end)
+
+                # pydeck Layer 설정
                 layer = pdk.Layer(
                     'ScatterplotLayer',
                     data,
@@ -141,19 +157,33 @@ if uploaded_file is not None:
                     pickable=True
                 )
 
+                # 텍스트 라벨 레이어 추가 (주석 포함)
+                text_layer = pdk.Layer(
+                    "TextLayer",
+                    data,
+                    get_position='[lon, lat]',
+                    get_text='name',
+                    get_size=24,
+                    get_color=[0, 0, 0],
+                    get_angle=0,
+                    get_alignment_baseline="'bottom'"
+                )
+
+                # pydeck Deck 생성
                 view_state = pdk.ViewState(
                     latitude=(start_lat + end_lat) / 2,
                     longitude=(start_lon + end_lon) / 2,
-                    zoom=10,
+                    zoom=zoom_level,
                     pitch=50,
                 )
 
                 r = pdk.Deck(
-                    layers=[layer],
+                    layers=[layer, text_layer],
                     initial_view_state=view_state,
                     tooltip={"text": "{name}"}
                 )
-                st.pydeck_chart(r)
 
+                # pydeck 맵 표시
+                st.pydeck_chart(r)
             else:
                 st.error("출발지 또는 도착지의 좌표를 찾을 수 없습니다.")
