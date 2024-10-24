@@ -19,15 +19,16 @@ def get_coordinates(address):
         "X-NCP-APIGW-API-KEY": CLIENT_SECRET
     }
     params = {"query": address}
-    response = requests.get(url, headers=headers, params=params)
-    data = response.json()
-
-    if data['meta']['totalCount'] > 0:
-        lat = data['addresses'][0]['y']
-        lon = data['addresses'][0]['x']
-        return float(lat), float(lon)
-    else:
-        return None, None
+    try:
+        response = requests.get(url, headers=headers, params=params, verify=False)
+        data = response.json()
+        if data['meta']['totalCount'] > 0:
+            lat = data['addresses'][0]['y']
+            lon = data['addresses'][0]['x']
+            return float(lat), float(lon)
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching coordinates: {e}")
+    return None, None
 
 # 두 좌표 사이의 거리 계산 함수
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -50,13 +51,17 @@ def get_building_floors(sigunguCd, bjdongCd, bun, ji):
         "_type": "json"
     }
     
-    response = requests.get(url, params=params)
-    data = response.json()
+    try:
+        response = requests.get(url, params=params, verify=False)
+        data = response.json()
+        
+        if 'response' in data and 'body' in data['response'] and 'items' in data['response']['body']:
+            items = data['response']['body']['items']
+            if items:
+                return items[0].get('grndFlrCnt', 'N/A'), items[0].get('ugrndFlrCnt', 'N/A')
     
-    if 'response' in data and 'body' in data['response'] and 'items' in data['response']['body']:
-        items = data['response']['body']['items']
-        if items:
-            return items[0].get('grndFlrCnt', 'N/A'), items[0].get('ugrndFlrCnt', 'N/A')
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching building floors: {e}")
     
     return 'N/A', 'N/A'
 
