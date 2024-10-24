@@ -9,40 +9,67 @@ CLIENT_ID = 'buzzqnu77m'  # 네이버 개발자 센터에서 발급받은 Client
 CLIENT_SECRET = 'QkOrNDd4v57qIR2WKrE1gNO7WKKYeiXUMtjjfTAN'  # 네이버 개발자 센터에서 발급받은 Client Secret
 
 # Geocoding API 호출 함수
-def get_coordinates(address):
+def get_coordinates(address, verify_ssl=True):
     url = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode"
     headers = {
         "X-NCP-APIGW-API-KEY-ID": CLIENT_ID,
         "X-NCP-APIGW-API-KEY": CLIENT_SECRET
     }
     params = {"query": address}
-    response = requests.get(url, headers=headers, params=params, verify=False)  # SSL 인증 비활성화
-    data = response.json()
     
-    if data['meta']['totalCount'] > 0:
-        lat = data['addresses'][0]['y']
-        lon = data['addresses'][0]['x']
-        return float(lat), float(lon)
-    else:
+    try:
+        if verify_ssl:
+            response = requests.get(url, headers=headers, params=params)
+        else:
+            response = requests.get(url, headers=headers, params=params, verify=False)  # SSL 인증 비활성화
+        
+        response.raise_for_status()
+        data = response.json()
+
+        if data['meta']['totalCount'] > 0:
+            lat = data['addresses'][0]['y']
+            lon = data['addresses'][0]['x']
+            return float(lat), float(lon)
+        else:
+            return None, None
+    except requests.exceptions.SSLError as e:
+        st.error(f"SSL Error occurred: {e}")
+        return None, None
+    except requests.exceptions.RequestException as e:
+        st.error(f"HTTP Error occurred: {e}")
         return None, None
 
 # 국토교통부 건축물대장정보 API 호출 함수
 SERVICE_KEY = 'aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D'  # 국토교통부 건축물대장 API 서비스키 입력
 
-def get_building_info(address):
+def get_building_info(address, verify_ssl=True):
     url = f"https://api.data.go.kr/openapi/tn_pubr_public_buldng_rl_buldng_api?serviceKey={SERVICE_KEY}&pageNo=1&numOfRows=10&format=json&sigunguCd=11680&bjdongCd=10300&platGbCd=0&bun=0001&ji=0000&startDate=20000101&endDate=20241231"
     params = {"sigunguCd": "시군구코드", "bjdongCd": "법정동코드", "platGbCd": "0", "bun": "0000", "ji": "0000"}
-    response = requests.get(url, params=params, verify=False)  # SSL 인증 비활성화
-    data = response.json()
     
-    if 'response' in data and data['response']['header']['resultCode'] == "00":
-        building_info = data['response']['body']['items'][0]
-        return {
-            'height': building_info['height'],  # 건물 높이
-            'type': building_info['mainPurpsCdNm'],  # 건물 용도
-            'floors': building_info['totDongTotArea']  # 층수
-        }
-    return None
+    try:
+        if verify_ssl:
+            response = requests.get(url, params=params)
+        else:
+            response = requests.get(url, params=params, verify=False)  # SSL 인증 비활성화
+
+        response.raise_for_status()
+        data = response.json()
+
+        if 'response' in data and data['response']['header']['resultCode'] == "00":
+            building_info = data['response']['body']['items'][0]
+            return {
+                'height': building_info['height'],  # 건물 높이
+                'type': building_info['mainPurpsCdNm'],  # 건물 용도
+                'floors': building_info['totDongTotArea']  # 층수
+            }
+        else:
+            return None
+    except requests.exceptions.SSLError as e:
+        st.error(f"SSL Error occurred: {e}")
+        return None
+    except requests.exceptions.RequestException as e:
+        st.error(f"HTTP Error occurred: {e}")
+        return None
 
 # 두 좌표 사이의 거리 계산 함수
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -54,14 +81,14 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return R * c
 
 # 가장 가까운 주소를 찾는 함수
-def find_closest_location(lat1, lon1, df):
+def find_closest_location(lat1, lon1, df, verify_ssl=True):
     closest_distance = float('inf')
     closest_location = None
     closest_lat = None
     closest_lon = None
 
     for index, row in df.iterrows():
-        lat2, lon2 = get_coordinates(row['주소'])
+        lat2, lon2 = get_coordinates(row['주소'], verify_ssl)
         if lat2 and lon2:
             distance = calculate_distance(lat1, lon1, lat2, lon2)
             if distance < closest_distance:
@@ -85,15 +112,16 @@ if uploaded_file is not None:
         st.write(df)
         start_address = st.text_input("출발지 주소를 입력하세요")
         end_address = st.text_input("도착지 주소를 입력하세요")
+        verify_ssl = st.checkbox("SSL 인증 사용", value=True)
 
         if st.button("거리 계산 및 지도 표시"):
-            start_lat, start_lon = get_coordinates(start_address)
-            end_lat, end_lon = get_coordinates(end_address)
+            start_lat, start_lon = get_coordinates(start_address, verify_ssl)
+            end_lat, end_lon = get_coordinates(end_address, verify_ssl)
 
             if start_lat and end_lat:
                 # 출발지 및 도착지 건물 정보 표시
-                building_info_start = get_building_info(start_address)
-                building_info_end = get_building_info(end_address)
+                building_info_start = get_building_info(start_address, verify_ssl)
+                building_info_end = get_building_info(end_address, verify_ssl)
 
                 if building_info_start:
                     st.write(f"출발지 건물 정보: {building_info_start['type']}, {building_info_start['floors']}층, {building_info_start['height']}m")
