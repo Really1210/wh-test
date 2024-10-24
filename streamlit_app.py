@@ -40,7 +40,7 @@ def get_coordinates(address, verify_ssl=True):
         return None, None
 
 # 국토교통부 건축물대장정보 API 호출 함수
-SERVICE_KEY = 'aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D'  # 국토교통부 건축물대장 API 서비스키 입력
+SERVICE_KEY = 'YOUR_SERVICE_KEY'  # 국토교통부 건축물대장 API 서비스키 입력
 
 def get_building_info(address, verify_ssl=True):
     url = f"https://api.data.go.kr/openapi/tn_pubr_public_buldng_rl_buldng_api?serviceKey={SERVICE_KEY}&pageNo=1&numOfRows=10&format=json&sigunguCd=11680&bjdongCd=10300&platGbCd=0&bun=0001&ji=0000&startDate=20000101&endDate=20241231"
