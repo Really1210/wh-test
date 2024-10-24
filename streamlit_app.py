@@ -32,9 +32,13 @@ if st.button("조회"):
             if items:
                 max_floor = 0
                 for item in items:
-                    flrNo = int(item.find('flrNo').text) if item.find('flrNo') is not None else 0
-                    if flrNo > max_floor:
-                        max_floor = flrNo
+                    flrNo_text = item.find('flrNo').text if item.find('flrNo') is not None else "0"
+                    try:
+                        flrNo = int(float(flrNo_text))  # 부동 소수점 문자열을 정수로 변환
+                        if flrNo > max_floor:
+                            max_floor = flrNo
+                    except ValueError:
+                        st.write(f"층 번호 변환 오류: {flrNo_text}")
                 
                 # 결과 출력
                 st.write(f"최고층 층수: {max_floor}층")
