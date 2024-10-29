@@ -5,46 +5,36 @@ from xml.etree import ElementTree
 # API 키 설정
 API_KEY = "aNcRfgfkhHMmk6%2BoALtF4mfxW8RC33Ur9MPkOnJKkjwecj4K7lR8Hdkaw53CtZlSpn0xF7YYe%2BP5lDefgRwksQ%3D%3D"
 
-# Streamlit UI 설정
+def get_max_floor(sigunguCd, bjdongCd, bun, ji):
+    url = f"http://apis.data.go.kr/1613000/BldRgstService_v2/getBrFlrOulnInfo?serviceKey={API_KEY}&sigunguCd={sigunguCd}&bjdongCd={bjdongCd}&bun={bun}&ji={ji}&_type=xml"
+    response = requests.get(url)
+    if response.status_code == 200:
+        tree = ElementTree.fromstring(response.content)
+        items = tree.findall('.//item')
+        max_floor = max(
+            int(float(item.find('flrNo').text)) 
+            for item in items if item.find('flrNo') is not None
+        )
+        return max_floor
+    else:
+        return None
+
 st.title("건축물 최고층 층수 조회")
 address = st.text_input("주소를 입력하세요 (예: 서울특별시 강남구 개포동 12번지):")
 
 if st.button("조회"):
     if address:
-        # 주소에서 시군구 코드, 법정동 코드, 번, 지 추출 (여기서는 예시로 고정된 값을 사용)
-        # 실제 구현에서는 주소를 파싱하여 적절한 코드를 추출해야 함
-        sigunguCd = "11680"  # 예시 시군구 코드
-        bjdongCd = "10300"   # 예시 법정동 코드
-        bun = "0012"         # 예시 번
-        ji = "0000"          # 예시 지
+        # 실제 구현에서는 주소 파싱을 통해 sigunguCd, bjdongCd, bun, ji 값을 추출
+        sigunguCd = "11680"  # 예시
+        bjdongCd = "10300"   # 예시
+        bun = "0012"         # 예시
+        ji = "0000"          # 예시
 
-        # API 요청 URL 구성
-        url = f"http://apis.data.go.kr/1613000/BldRgstService_v2/getBrFlrOulnInfo?serviceKey={API_KEY}&sigunguCd={sigunguCd}&bjdongCd={bjdongCd}&bun={bun}&ji={ji}&_type=xml"
+        max_floor = get_max_floor(sigunguCd, bjdongCd, bun, ji)
         
-        # API 요청 및 응답 처리
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            # XML 파싱
-            tree = ElementTree.fromstring(response.content)
-            items = tree.findall('.//item')
-            
-            if items:
-                max_floor = 0
-                for item in items:
-                    flrNo_text = item.find('flrNo').text if item.find('flrNo') is not None else "0"
-                    try:
-                        flrNo = int(float(flrNo_text))  # 부동 소수점 문자열을 정수로 변환
-                        if flrNo > max_floor:
-                            max_floor = flrNo
-                    except ValueError:
-                        st.write(f"층 번호 변환 오류: {flrNo_text}")
-                
-                # 결과 출력
-                st.write(f"최고층 층수: {max_floor}층")
-            else:
-                st.write("해당 주소에 대한 정보를 찾을 수 없습니다.")
+        if max_floor is not None:
+            st.write(f"최고층 층수: {max_floor}층")
         else:
-            st.write("API 요청에 실패했습니다. 다시 시도해주세요.")
+            st.write("해당 주소에 대한 정보를 찾을 수 없습니다.")
     else:
         st.write("주소를 입력하세요.")
